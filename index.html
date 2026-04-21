@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KK Traders — Best Prices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --red:   #E8181E;
+    --dark:  #111111;
+    --off:   #1A1A1A;
+    --card:  #222222;
+    --light: #F5F5F0;
+    --muted: #888888;
+    --whatsapp: #25D366;
+    --gold: #FFD700;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--light);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    background: rgba(17,17,17,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 2px solid var(--red);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    letter-spacing: 3px;
+    color: var(--light);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--red); }
+
+  /* cart icon */
+  #cart-btn {
+    position: relative; cursor: pointer; background: none; border: none;
+    color: var(--light); font-size: 1.5rem; padding: 6px 10px;
+    transition: color .2s;
+  }
+  #cart-btn:hover { color: var(--red); }
+  #cart-count {
+    position: absolute; top: 0; right: 0;
+    background: var(--red); color: #fff;
+    font-size: .65rem; font-weight: 800;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    transition: transform .2s;
+  }
+  #cart-count.bump { transform: scale(1.4); }
+
+  /* ── HERO ── */
+  #hero {
+    width: 100%; height: 100svh; min-height: 480px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #hero img.hero-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    filter: brightness(.45);
+    z-index: 0;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(232,24,30,.18) 0%, rgba(0,0,0,.6) 60%);
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    text-align: center; padding: 0 20px; max-width: 800px;
+  }
+  .hero-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(.75rem, 2vw, .95rem);
+    font-weight: 700;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.2rem, 12vw, 8rem);
+    line-height: .95;
+    letter-spacing: 4px;
+    color: var(--light);
+    text-shadow: 0 4px 40px rgba(232,24,30,.5);
+  }
+  .hero-title span { color: var(--red); }
+  .hero-sub {
+    margin-top: 16px;
+    font-size: clamp(.9rem, 2vw, 1.1rem);
+    color: rgba(245,245,240,.7);
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+  .btn-primary {
+    display: inline-block; margin-top: 36px;
+    padding: 15px 42px;
+    background: var(--red);
+    color: #fff; font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 1rem; letter-spacing: 2px;
+    text-transform: uppercase; text-decoration: none;
+    border: none; cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background .25s, transform .2s;
+  }
+  .btn-primary:hover { background: #c0141a; transform: translateY(-2px); }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    text-align: center;
+    padding: 72px 20px 36px;
+  }
+  .section-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 7vw, 3.8rem);
+    letter-spacing: 3px;
+    color: var(--light);
+  }
+  .section-header h2 span { color: var(--red); }
+  .section-header p {
+    margin-top: 8px; color: var(--muted);
+    font-size: .9rem; letter-spacing: 1px;
+  }
+  .divider {
+    width: 60px; height: 4px;
+    background: var(--red);
+    margin: 14px auto 0;
+    clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+  }
+
+  /* ── PRODUCTS ── */
+  #products { padding: 0 0 80px; }
+
+  .carousel-wrap {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 16px 24px 28px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--red) var(--off);
+  }
+  .carousel-wrap::-webkit-scrollbar { height: 5px; }
+  .carousel-wrap::-webkit-scrollbar-track { background: var(--off); }
+  .carousel-wrap::-webkit-scrollbar-thumb { background: var(--red); border-radius: 4px; }
+
+  .product-card {
+    flex: 0 0 clamp(220px, 70vw, 280px);
+    scroll-snap-align: start;
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #2e2e2e;
+    transition: transform .25s, box-shadow .25s;
+    cursor: pointer;
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(232,24,30,.25);
+    border-color: var(--red);
+  }
+  .card-img-wrap {
+    width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #1c1c1c;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .4s;
+  }
+  .product-card:hover .card-img-wrap img { transform: scale(1.08); }
+  .card-body {
+    padding: 16px 18px 20px;
+  }
+  .card-name {
+    font-weight: 700; font-size: .95rem;
+    color: var(--light); line-height: 1.3;
+    min-height: 2.6em;
+  }
+  .add-btn {
+    margin-top: 14px; width: 100%;
+    padding: 11px;
+    background: var(--red); color: #fff;
+    border: none; border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: .88rem;
+    letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: background .2s, transform .15s;
+  }
+  .add-btn:hover { background: #c0141a; transform: scale(1.02); }
+  .add-btn:active { transform: scale(.97); }
+
+  /* ── CART OVERLAY ── */
+  #cart-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+  }
+  #cart-overlay.open { display: block; }
+
+  #cart-drawer {
+    position: fixed; right: 0; top: 0; bottom: 0;
+    width: min(420px, 100vw);
+    background: var(--off);
+    border-left: 3px solid var(--red);
+    z-index: 2001;
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  #cart-drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 22px;
+    border-bottom: 1px solid #333;
+  }
+  .drawer-header h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.7rem; letter-spacing: 2px; color: var(--light);
+  }
+  #close-cart {
+    background: none; border: none; color: var(--muted);
+    font-size: 1.6rem; cursor: pointer; transition: color .2s;
+    line-height: 1;
+  }
+  #close-cart:hover { color: var(--red); }
+
+  #cart-items {
+    flex: 1; overflow-y: auto; padding: 16px 22px;
+  }
+  .empty-cart {
+    text-align: center; color: var(--muted); margin-top: 60px;
+    font-size: .95rem;
+  }
+  .empty-cart .icon { font-size: 3rem; margin-bottom: 12px; }
+
+  .cart-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .cart-item img {
+    width: 60px; height: 60px; object-fit: cover;
+    border-radius: 8px; border: 1px solid #333;
+  }
+  .ci-info { flex: 1; }
+  .ci-name { font-weight: 700; font-size: .88rem; }
+  .ci-qty {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 6px;
+  }
+  .qty-btn {
+    background: #333; border: none; color: var(--light);
+    width: 26px; height: 26px; border-radius: 6px;
+    font-size: 1rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .qty-btn:hover { background: var(--red); }
+  .qty-val { font-weight: 700; font-size: .9rem; min-width: 18px; text-align: center; }
+  .ci-remove {
+    background: none; border: none; color: var(--muted);
+    font-size: 1.1rem; cursor: pointer; transition: color .2s;
+  }
+  .ci-remove:hover { color: var(--red); }
+
+  /* ── ORDER FORM ── */
+  .drawer-form {
+    padding: 18px 22px;
+    border-top: 1px solid #333;
+    background: #1c1c1c;
+  }
+  .drawer-form h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem; letter-spacing: 2px;
+    color: var(--light); margin-bottom: 14px;
+  }
+  .form-row { margin-bottom: 12px; }
+  .form-row label {
+    display: block; font-size: .78rem; font-weight: 700;
+    color: var(--muted); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .form-row input, .form-row textarea {
+    width: 100%; padding: 10px 14px;
+    background: #2a2a2a; border: 1px solid #383838;
+    border-radius: 8px; color: var(--light);
+    font-family: 'Nunito', sans-serif; font-size: .9rem;
+    transition: border-color .2s;
+    resize: vertical;
+  }
+  .form-row input:focus, .form-row textarea:focus {
+    outline: none; border-color: var(--red);
+  }
+  #send-order {
+    width: 100%; padding: 14px;
+    background: var(--red); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 3px;
+    cursor: pointer; transition: background .2s, transform .15s;
+    margin-top: 6px;
+  }
+  #send-order:hover { background: #c0141a; transform: translateY(-1px); }
+  #send-order:disabled { background: #555; cursor: not-allowed; }
+  #order-msg {
+    margin-top: 10px; font-size: .82rem;
+    font-weight: 700; text-align: center;
+    min-height: 1.2em;
+  }
+  #order-msg.success { color: #4ade80; }
+  #order-msg.error   { color: #f87171; }
+
+  /* ── ABOUT STRIP ── */
+  #about {
+    background: var(--off);
+    border-top: 2px solid #222; border-bottom: 2px solid #222;
+    padding: 60px 24px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px; text-align: center;
+  }
+  #about h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    letter-spacing: 3px;
+  }
+  #about h2 span { color: var(--red); }
+  #about p { max-width: 560px; color: var(--muted); line-height: 1.7; font-size: .95rem; }
+
+  .badge-row {
+    display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+    margin-top: 10px;
+  }
+  .badge {
+    display: flex; align-items: center; gap: 8px;
+    background: #2a2a2a; border: 1px solid #333;
+    border-radius: 30px; padding: 8px 18px;
+    font-size: .82rem; font-weight: 700;
+    color: var(--light); letter-spacing: 1px;
+  }
+  .badge span { font-size: 1rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 24px; text-align: center;
+    border-top: 1px solid #222;
+  }
+  footer p { color: var(--muted); font-size: .8rem; }
+  footer strong { color: var(--red); }
+
+  /* ── WHATSAPP FLOAT ── */
+  #wa-float {
+    position: fixed; bottom: 24px; left: 24px;
+    z-index: 1500;
+    background: var(--whatsapp); color: #fff;
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.7rem; text-decoration: none;
+    box-shadow: 0 6px 24px rgba(37,211,102,.45);
+    transition: transform .2s, box-shadow .2s;
+  }
+  #wa-float:hover {
+    transform: scale(1.12);
+    box-shadow: 0 10px 32px rgba(37,211,102,.65);
+  }
+  #wa-float::after {
+    content: "Order on WhatsApp";
+    position: absolute; left: 68px;
+    background: #111; color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: .75rem; font-weight: 700;
+    white-space: nowrap; padding: 6px 12px;
+    border-radius: 6px; pointer-events: none;
+    opacity: 0; transform: translateX(-6px);
+    transition: opacity .2s, transform .2s;
+  }
+  #wa-float:hover::after { opacity: 1; transform: translateX(0); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--red); color: #fff;
+    padding: 10px 22px; border-radius: 30px;
+    font-weight: 700; font-size: .85rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 3000; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (min-width: 768px) {
+    .carousel-wrap { padding: 16px 48px 28px; gap: 24px; }
+    .product-card { flex: 0 0 260px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#"><span>KK</span> Traders</a>
+  <button id="cart-btn" aria-label="Open Cart">
+    🛒
+    <span id="cart-count">0</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <img class="hero-bg" src="https://i.ibb.co/84tHZtsC/READit-Thanit-April-58.png" alt="KK Traders Hero" />
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-tagline">✦ Best Prices in Town ✦</p>
+    <h1 class="hero-title"><span>KK</span> Traders</h1>
+    <p class="hero-sub">Genuine Honda Spare Parts — Fast Delivery</p>
+    <a class="btn-primary" href="#products">Shop Now ↓</a>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="section-header">
+    <h2>Our <span>Products</span></h2>
+    <p>Authentic Honda body parts — 2026 models</p>
+    <div class="divider"></div>
+  </div>
+  <div class="carousel-wrap" id="carousel"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <h2>Why <span>KK Traders?</span></h2>
+  <p>We supply genuine, OEM-quality Honda spare parts at the most competitive prices. Our dedicated team ensures fast dispatch and reliable service every time you order.</p>
+  <div class="badge-row">
+    <div class="badge"><span>✅</span> Genuine Parts</div>
+    <div class="badge"><span>🚀</span> Fast Dispatch</div>
+    <div class="badge"><span>💰</span> Best Prices</div>
+    <div class="badge"><span>🤝</span> Trusted Dealer</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>KK Traders</strong>. All rights reserved. | Best Prices, Every Time.</p>
+</footer>
+
+<!-- WHATSAPP FLOAT -->
+<a id="wa-float" href="https://wa.me/03020470822" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <!-- WhatsApp SVG icon -->
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.523 5.848L.055 23.27l5.6-1.468A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.805 9.805 0 0 1-5.03-1.386l-.36-.213-3.325.872.886-3.24-.234-.373A9.773 9.773 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818zm5.364-7.298c-.294-.147-1.74-.858-2.01-.955-.27-.098-.467-.147-.663.147-.196.294-.76.955-.932 1.152-.172.196-.343.22-.637.073-.294-.147-1.243-.458-2.368-1.46-.875-.78-1.465-1.744-1.636-2.038-.171-.294-.018-.453.129-.6.132-.131.294-.343.44-.514.148-.171.197-.294.295-.49.098-.196.049-.368-.025-.515-.074-.147-.663-1.6-.908-2.19-.24-.575-.484-.497-.663-.506l-.565-.01c-.196 0-.514.073-.784.367-.27.294-1.03 1.005-1.03 2.45 0 1.444 1.055 2.84 1.202 3.036.147.196 2.078 3.173 5.034 4.45.703.303 1.252.484 1.679.62.705.224 1.347.192 1.854.117.565-.085 1.74-.712 1.986-1.4.245-.687.245-1.276.171-1.4-.073-.122-.27-.196-.564-.343z"/></svg>
+</a>
+
+<!-- TOAST -->
+<div id="toast">Added to cart!</div>
+
+<!-- CART OVERLAY -->
+<div id="cart-overlay"></div>
+
+<!-- CART DRAWER -->
+<div id="cart-drawer">
+  <div class="drawer-header">
+    <h3>🛒 Your Cart</h3>
+    <button id="close-cart" aria-label="Close Cart">✕</button>
+  </div>
+
+  <div id="cart-items">
+    <div class="empty-cart" id="empty-msg">
+      <div class="icon">🛒</div>
+      <p>Your cart is empty.<br>Add some products!</p>
+    </div>
+  </div>
+
+  <div class="drawer-form" id="order-form-wrap" style="display:none;">
+    <h4>📦 Your Details</h4>
+
+    <div class="form-row">
+      <label for="cust-name">Full Name</label>
+      <input type="text" id="cust-name" placeholder="e.g. Ali Raza" />
+    </div>
+    <div class="form-row">
+      <label for="cust-phone">Phone Number</label>
+      <input type="tel" id="cust-phone" placeholder="e.g. 0300-1234567" />
+    </div>
+    <div class="form-row">
+      <label for="cust-address">Delivery Address (optional)</label>
+      <textarea id="cust-address" rows="2" placeholder="Your city / area"></textarea>
+    </div>
+
+    <button id="send-order">Send Order ✉️</button>
+    <p id="order-msg"></p>
+  </div>
+</div>
+
+<script>
+// ── EmailJS Init ──────────────────────────────────────────────────────────────
+(function(){
+  // Replace with your actual EmailJS public key
+  emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+})();
+
+// ── Product Data ──────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  {
+    id: 1,
+    name: "Honda CD-70 Red Fuel Tank 2026",
+    img: "https://i.ibb.co/vvJ5jDWJ/IMG-0117.avif"
+  },
+  {
+    id: 2,
+    name: "Honda CD-70 Red Side Cover 2026",
+    img: "https://i.ibb.co/5WHBjzjZ/IMG-0116.avif"
+  },
+  {
+    id: 3,
+    name: "Honda CG-125 Red Fuel Tank 2026",
+    img: "https://i.ibb.co/MkZv7LH5/IMG-0104.avif"
+  },
+  {
+    id: 4,
+    name: "Honda CG-125 Red Side Cover 2026",
+    img: "https://i.ibb.co/fYqnZkDt/IMG-0105.avif"
+  }
+];
+
+// ── Cart State ────────────────────────────────────────────────────────────────
+let cart = {}; // { id: {product, qty} }
+
+// ── Render Product Carousel ──────────────────────────────────────────────────
+const carousel = document.getElementById('carousel');
+PRODUCTS.forEach(p => {
+  const card = document.createElement('div');
+  card.className = 'product-card';
+  card.innerHTML = `
+    <div class="card-img-wrap">
+      <img src="${p.img}" alt="${p.name}" loading="lazy" />
+    </div>
+    <div class="card-body">
+      <div class="card-name">${p.name}</div>
+      <button class="add-btn" data-id="${p.id}">+ Add to Cart</button>
+    </div>`;
+  carousel.appendChild(card);
+});
+
+// ── Add to Cart ───────────────────────────────────────────────────────────────
+carousel.addEventListener('click', e => {
+  const btn = e.target.closest('.add-btn');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.id);
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!product) return;
+
+  if (cart[id]) {
+    cart[id].qty++;
+  } else {
+    cart[id] = { product, qty: 1 };
+  }
+  updateCartUI();
+  showToast(`${product.name.split(' ').slice(0,3).join(' ')} added!`);
+});
+
+// ── Cart UI ───────────────────────────────────────────────────────────────────
+function updateCartUI() {
+  const total = Object.values(cart).reduce((s, v) => s + v.qty, 0);
+
+  // Count badge
+  const badge = document.getElementById('cart-count');
+  badge.textContent = total;
+  badge.classList.add('bump');
+  setTimeout(() => badge.classList.remove('bump'), 250);
+
+  // Items list
+  const itemsEl = document.getElementById('cart-items');
+  const emptyMsg = document.getElementById('empty-msg');
+  const formWrap = document.getElementById('order-form-wrap');
+
+  if (total === 0) {
+    emptyMsg.style.display = 'block';
+    formWrap.style.display = 'none';
+    itemsEl.innerHTML = '';
+    itemsEl.appendChild(emptyMsg);
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+  formWrap.style.display = 'block';
+  itemsEl.innerHTML = '';
+
+  Object.values(cart).forEach(({ product, qty }) => {
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${product.img}" alt="${product.name}" />
+      <div class="ci-info">
+        <div class="ci-name">${product.name}</div>
+        <div class="ci-qty">
+          <button class="qty-btn" data-action="dec" data-id="${product.id}">−</button>
+          <span class="qty-val">${qty}</span>
+          <button class="qty-btn" data-action="inc" data-id="${product.id}">+</button>
+        </div>
+      </div>
+      <button class="ci-remove" data-action="remove" data-id="${product.id}" title="Remove">✕</button>
+    `;
+    itemsEl.appendChild(div);
+  });
+}
+
+// ── Qty buttons ───────────────────────────────────────────────────────────────
+document.getElementById('cart-items').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.id);
+  const action = btn.dataset.action;
+
+  if (action === 'inc') {
+    cart[id].qty++;
+  } else if (action === 'dec') {
+    cart[id].qty--;
+    if (cart[id].qty <= 0) delete cart[id];
+  } else if (action === 'remove') {
+    delete cart[id];
+  }
+  updateCartUI();
+});
+
+// ── Open / Close Drawer ──────────────────────────────────────────────────────
+function openCart() {
+  document.getElementById('cart-overlay').classList.add('open');
+  document.getElementById('cart-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('cart-btn').addEventListener('click', openCart);
+document.getElementById('close-cart').addEventListener('click', closeCart);
+document.getElementById('cart-overlay').addEventListener('click', closeCart);
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Send Order via EmailJS ────────────────────────────────────────────────────
+document.getElementById('send-order').addEventListener('click', async () => {
+  const name    = document.getElementById('cust-name').value.trim();
+  const phone   = document.getElementById('cust-phone').value.trim();
+  const address = document.getElementById('cust-address').value.trim();
+  const msgEl   = document.getElementById('order-msg');
+  const sendBtn = document.getElementById('send-order');
+
+  if (!name || !phone) {
+    msgEl.textContent = '⚠️ Please enter your name and phone number.';
+    msgEl.className = 'error';
+    return;
+  }
+  if (Object.keys(cart).length === 0) {
+    msgEl.textContent = '⚠️ Your cart is empty!';
+    msgEl.className = 'error';
+    return;
+  }
+
+  // Build order list
+  const itemLines = Object.values(cart)
+    .map(({ product, qty }) => `• ${product.name} × ${qty}`)
+    .join('\n');
+
+  const templateParams = {
+    customer_name: name,
+    customer_phone: phone,
+    customer_address: address || 'Not provided',
+    order_items: itemLines,
+    order_time: new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })
+  };
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Sending…';
+  msgEl.textContent = '';
+
+  try {
+    // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with your EmailJS values
+    await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
+    msgEl.textContent = '✅ Order sent! We'll contact you shortly.';
+    msgEl.className = 'success';
+    cart = {};
+    updateCartUI();
+    document.getElementById('cust-name').value = '';
+    document.getElementById('cust-phone').value = '';
+    document.getElementById('cust-address').value = '';
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    // Fallback: open WhatsApp with order details
+    const waText = encodeURIComponent(
+      `*New Order from KK Traders Website*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address || 'N/A'}\n\n*Items:*\n${itemLines}`
+    );
+    msgEl.innerHTML = `⚠️ Email failed. <a href="https://wa.me/03020470822?text=${waText}" target="_blank" style="color:var(--gold);font-weight:800;">Send via WhatsApp instead →</a>`;
+    msgEl.className = 'error';
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send Order ✉️';
+  }
+});
+
+// Init
+updateCartUI();
+</script>
+</body>
+</html>
